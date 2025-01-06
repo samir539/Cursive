@@ -8,6 +8,8 @@
 #include <sys/ioctl.h>
 
 #define CTRL_KEY(k) ((k) & 0x1f) //get character value 
+#define CURSIVE_VERSION "0.0.1"
+
 
 struct editorConfig {
     int screenrows;
@@ -131,7 +133,20 @@ void abFree(struct abuf *ab){
 void editorDrawRows(struct abuf *ab){
     int y;
     for (y=0; y<E.screenrows;y++){
-        abAppend(ab,"~",1);
+        if (y == 0){
+            char welcome[80];
+            int welcomelen = snprintf(welcome, sizeof(welcome), "Cursive editor -- version %s", CURSIVE_VERSION);
+            if (welcomelen > E.screencols) welcomelen = E.screencols;
+            int padding = (E.screencols - welcomelen) / 2;
+            if (padding){
+                abAppend(ab,"~",1);
+                padding--;
+            }
+            while (padding --) abAppend(ab, " ",1);
+            abAppend(ab,welcome,welcomelen);
+        } else {
+            abAppend(ab,"~",1);
+        }
         abAppend(ab, "\x1b[K",3);
         if (y < E.screenrows -1){
             abAppend(ab,"\r\n",2);
